@@ -1,0 +1,32 @@
+version: "3.4"
+services:
+  app:
+    image: gyteng/ssmgr
+    container_name: ssmgr
+    restart: always
+    network_mode: "host"
+    depends_on:
+      - redis
+    command:
+      - sh
+      - -c
+      - |
+        ssserver -m chacha20 -p 12345 -k abcedf --manager-address 127.0.0.1:6001 \
+        echo 123 & \
+        ssmgr -c ~/.ssmgr/s.yml & \
+        ssmgr -c  ~/.ssmgr/webgui.yml
+    #    command:
+    #      - sh
+    #      - -c
+    #      - |
+    #        echo 1
+    #        echo 2
+    volumes:
+      - ./config:/root/.ssmgr
+
+  redis:
+    image: redis
+    container_name: my_redis
+    command: redis-server --requirepass redis
+    ports:
+      - "6379:6379"
