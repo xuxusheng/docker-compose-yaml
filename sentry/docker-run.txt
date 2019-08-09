@@ -1,0 +1,49 @@
+docker run -d --name sentry-redis redis
+
+docker run -d --name sentry-postgres \
+  -e POSTGRES_PASSWORD=secret \
+  -e POSTGRES_USER=sentry \
+  postgres
+
+docker run -d --name sentry-smtp \
+  tianon/exim4
+
+# 获取 key
+docker run --rm sentry config generate-secret-key
+
+docker run \
+  --rm \
+  -it \
+  --link sentry-redis:redis \
+  --link sentry-postgres:postgres \
+  --link sentry-smtp:smtp \
+  --env SENTRY_SECRET_KEY='58ht9q@np4osermr8p!fl0@^dowlvd8@o#*sw1h^17!@mbf4**' \
+  sentry upgrade
+
+docker run \
+  -d \
+  --name sentry-web-01 \
+  -p 9000:9000 \
+  --link sentry-redis:redis \
+  --link sentry-postgres:postgres \
+  --link sentry-smtp:smtp \
+  --env SENTRY_SECRET_KEY='58ht9q@np4osermr8p!fl0@^dowlvd8@o#*sw1h^17!@mbf4**' \
+  sentry run web
+
+docker run \
+  -d \
+  --name sentry-worker-01 \
+  --link sentry-redis:redis \
+  --link sentry-postgres:postgres \
+  --link sentry-smtp:smtp \
+  --env SENTRY_SECRET_KEY='58ht9q@np4osermr8p!fl0@^dowlvd8@o#*sw1h^17!@mbf4**' \
+  sentry run worker
+
+docker run \
+  -d \
+  --name sentry-cron \
+  --link sentry-redis:redis \
+  --link sentry-postgres:postgres \
+  --link sentry-smtp:smtp \
+  --env SENTRY_SECRET_KEY='58ht9q@np4osermr8p!fl0@^dowlvd8@o#*sw1h^17!@mbf4**' \
+  sentry run cron

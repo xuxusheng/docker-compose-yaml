@@ -1,0 +1,16 @@
+version: "3"
+services:
+  app:
+    image: redis
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    # 在容器执行 redis-server 启动命令，并打开 redis 持久化配置，设置密码
+    command: redis-server --appendonly yes --requirepass redis
+
+volumes:
+  redisdata:
+    driver: local
